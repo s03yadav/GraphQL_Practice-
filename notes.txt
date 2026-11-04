@@ -1,0 +1,46 @@
+++++++++++++++++++++++++++++++++ Day 1 Update ++++++++++++++++++++++++++++++++
+
+What is dotenv lib
+=> "dotenv" is npm package that helps to store configurations values and sensitive information outside js code
+=> Code : require('dotenv').config();
+
+
+What is Apollo Server? 
+=> Apollo Sever is responsile for Receiving GraphQL services and validating 
+        queries against your schema and Returning the result as JSON.
+
+=> TypeDefs : Defining your GraphQL schema. typeDefs defines the structure of your API.
+        The syntax used here is called GraphQL Schema Definition Language (SDL)
+        ex : const typeDefs = `
+                type Query {
+                    totalPosts: Int!
+                }
+            `;
+
+        type    = Defines a GraphQL type
+        Query   = Root type for reading data
+        totalPosts  = Field that the client can request
+        Int = 	Integer data type 
+        !   =   Value cannot be null
+
+
+=> Resolvers : Resolvers are Js functions that tell GraphQL how to retrieve or calculate the value of a field
+        ex : const reolver = {
+                    Query: {
+                        totalPosts: () => {
+                            return 52;
+                        }
+                    }
+                }
+
+
+
+=> Creating a apollo Server 
+    Ex : const apolloServer = new ApolloServer({
+                                    typeDefs,
+                                    resolvers
+                                });
+
+
+
+++++++++++++++++++++++++++++++++ Day 2 Update ++++++++++++++++++++++++++++++++
