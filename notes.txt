@@ -1,46 +1,399 @@
 ++++++++++++++++++++++++++++++++ Day 1 Update ++++++++++++++++++++++++++++++++
 
-What is dotenv lib
-=> "dotenv" is npm package that helps to store configurations values and sensitive information outside js code
-=> Code : require('dotenv').config();
+**What is dotenv library?**
 
+=> `dotenv` is an npm package that helps store configuration values and sensitive information outside JavaScript code.
 
-What is Apollo Server? 
-=> Apollo Sever is responsile for Receiving GraphQL services and validating 
-        queries against your schema and Returning the result as JSON.
+=> Code: `require('dotenv').config();`
 
-=> TypeDefs : Defining your GraphQL schema. typeDefs defines the structure of your API.
-        The syntax used here is called GraphQL Schema Definition Language (SDL)
-        ex : const typeDefs = `
-                type Query {
-                    totalPosts: Int!
-                }
-            `;
+**What is Apollo Server?**
 
-        type    = Defines a GraphQL type
-        Query   = Root type for reading data
-        totalPosts  = Field that the client can request
-        Int = 	Integer data type 
-        !   =   Value cannot be null
+=> Apollo Server is responsible for receiving GraphQL requests, validating queries against your schema, executing resolvers and returning results as JSON.
 
+**TypeDefs:**
 
-=> Resolvers : Resolvers are Js functions that tell GraphQL how to retrieve or calculate the value of a field
-        ex : const reolver = {
-                    Query: {
-                        totalPosts: () => {
-                            return 52;
-                        }
-                    }
-                }
+=> Defines your GraphQL schema. `typeDefs` defines the structure of your API.
 
+=> The syntax used here is called GraphQL Schema Definition Language (SDL).
 
+Example:
 
-=> Creating a apollo Server 
-    Ex : const apolloServer = new ApolloServer({
-                                    typeDefs,
-                                    resolvers
-                                });
+```javascript
+const typeDefs = `
+    type Query {
+        totalPosts: Int!
+    }
+`;
+```
 
+- `type` = Defines a GraphQL type.
+- `Query` = Root type for reading data.
+- `totalPosts` = Field that the client can request.
+- `Int` = Integer data type.
+- `!` = Value cannot be null.
 
+**Resolvers:**
+
+=> Resolvers are JavaScript functions that tell GraphQL how to retrieve or calculate the value of a field.
+
+Example:
+
+```javascript
+const resolvers = {
+    Query: {
+        totalPosts: () => {
+            return 52;
+        }
+    }
+};
+```
+
+**Creating an Apollo Server:**
+
+```javascript
+const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers
+});
+```
 
 ++++++++++++++++++++++++++++++++ Day 2 Update ++++++++++++++++++++++++++++++++
+
+**Integrating Apollo Server with Express**
+
+=> Created an asynchronous function named `startServer()` to integrate Apollo Server with the Express application.
+
+=> Used `async/await` to ensure Apollo Server starts before registering its middleware.
+
+=> Registered Apollo Server middleware with Express using `expressMiddleware(server)`.
+
+=> Used `app.use()` to configure the GraphQL endpoint at `/graphQL`.
+
+=> Registered a normal Express GET route using `app.get('/')`.
+
+=> Started the Express application using `app.listen()` on the specified PORT.
+
+**Main Function:**
+
+```javascript
+async function startServer() {
+
+    // Start Apollo Server
+    await server.start();
+
+    // Register Apollo middleware
+    app.use(
+        '/graphQL',
+        cors(),
+        express.json(),
+        expressMiddleware(server)
+    );
+
+    // Start Express Server
+    app.listen(process.env.PORT);
+}
+
+startServer();
+```
+
+**Concepts Learned:**
+
+1. `async/await` – Handling asynchronous operations.
+2. `app.use()` – Registering middleware in Express.
+3. `cors()` – Allowing cross-origin requests.
+4. `express.json()` – Parsing incoming JSON request bodies.
+5. `expressMiddleware()` – Connecting Apollo Server with Express.
+6. `app.listen()` – Starting the Express HTTP server.
+
+++++++++++++++++++++++++++++++++ Day 3 Update ++++++++++++++++++++++++++++++++
+
+**Modular File Structure for GraphQL**
+
+=> Created a separate file distribution for GraphQL `typeDefs` and `resolvers` to make the project more organized and maintainable.
+
+=> Used the following libraries:
+
+- `@graphql-tools/merge`
+- `@graphql-tools/load-files`
+
+**Folder Structure:**
+
+```text
+graphql_project_ud/
+│
+├── resolvers/
+│   └── getuser.js
+│
+├── typeDefs/
+│   ├── address.js
+│   └── user.js
+│
+└── server.js
+```
+
+**Concepts Learned:**
+
+1. `loadFiles()` – Automatically loads multiple schema or resolver files from a specified directory.
+
+2. `mergeTypeDefs()` – Combines multiple GraphQL type definitions into a single schema.
+
+3. `mergeResolvers()` – Combines multiple resolver objects into a single resolver object.
+
+**Example:**
+
+```javascript
+const { mergeTypeDefs, mergeResolvers } =
+    require('@graphql-tools/merge');
+
+const { loadFiles } =
+    require('@graphql-tools/load-files');
+
+const path = require('path');
+
+// Load all typeDef files
+const def_File = await loadFiles(
+    path.join(__dirname, './typeDefs')
+);
+
+// Load all resolver files
+const resolver_Files = await loadFiles(
+    path.join(__dirname, './resolvers')
+);
+
+// Merge all typeDefs
+const typeDefs = mergeTypeDefs(def_File);
+
+// Merge all resolvers
+const resolvers = mergeResolvers(resolver_Files);
+```
+
+**Important Learning:**
+
+=> Instead of importing every schema and resolver file manually, `loadFiles()` automatically loads them from their respective folders.
+
+=> `mergeTypeDefs()` and `mergeResolvers()` combine the loaded files, allowing Apollo Server to receive a single consolidated schema and resolver structure.
+
+++++++++++++++++++++++++++++++++ Day 4 Update ++++++++++++++++++++++++++++++++
+
+**MongoDB Atlas Connection using Mongoose**
+
+=> Connected the Node.js application with MongoDB Atlas using a connection URL stored in the `.env` file.
+
+=> Installed and used the `mongoose` library to establish a connection between the application and MongoDB Atlas.
+
+=> Created a separate file named `connection.js` to handle database connectivity, keeping database logic separate from the main `server.js` file.
+
+**Connection Function:**
+
+```javascript
+async function connect(URL) {
+    try {
+        const db = await mongoose.connect(URL);
+        return db;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+module.exports = connect;
+```
+
+**Concepts Learned:**
+
+1. **Mongoose:** An ODM (Object Data Modeling) library that allows Node.js applications to interact with MongoDB using JavaScript objects and schemas.
+
+2. **mongoose.connect():** Establishes a connection between the Node.js application and MongoDB using the provided connection URL.
+
+3. **Async/Await:** Used to handle the asynchronous database connection process.
+
+4. **Try/Catch:** Handles errors that may occur while establishing the database connection.
+
+5. **Environment Variables:** Stored the MongoDB Atlas connection string in `.env` using `CLOUD_DB` to keep sensitive connection details outside the source code.
+
+**Server Integration:**
+
+=> Imported the `connect()` function into `server.js`.
+
+=> Called `connect(process.env.CLOUD_DB)` to establish the database connection.
+
+=> Used `.then()` to start the Express server only after successfully connecting to MongoDB Atlas.
+
+=> Used `.catch()` to handle database connection errors.
+
+**Important Learning:**
+
+The Express server starts listening for incoming requests only after a successful database connection. This ensures that the application does not start accepting requests when its database connection has failed.
+
+++++++++++++++++++++++++++++++++ Day 5 Update ++++++++++++++++++++++++++++++++
+
+**Introduction to GraphQL Mutations**
+
+=> Learned about GraphQL Mutations, which are used to perform operations that modify data on the server.
+
+=> While Queries are used to fetch or read data, Mutations are used to create, update or delete data.
+
+**Difference between Query and Mutation:**
+
+1. Query – Used to retrieve existing data.
+2. Mutation – Used to modify existing data.
+
+**1. Defining Mutation in TypeDefs**
+
+=> Added a `Mutation` root type inside `user.js` to define an operation named `newUser`.
+
+=> `newUser` accepts name, address, email and mobile as arguments and returns a User object.
+
+**user.js**
+
+```graphql
+type Mutation {
+    newUser(
+        name: String!,
+        address: AddressInput!,
+        email: String!,
+        mobile: String!
+    ): User!
+}
+```
+
+**2. Understanding GraphQL Input Types**
+
+=> Created a custom input type named `AddressInput` inside `address.js`.
+
+=> Input types are used to accept structured objects as arguments in GraphQL queries and mutations.
+
+**address.js**
+
+```graphql
+input AddressInput {
+    houseNumber: Int!
+    buildingName: String!
+    Area: String!
+    pincode: Int!
+    City: String!
+    State: String!
+}
+```
+
+**Concepts Learned:**
+
+1. `type Mutation` – Defines the root type for data-modifying operations.
+2. `input` – Defines a custom input object that can be passed as an argument to a Query or Mutation.
+3. `AddressInput!` – Specifies that the address argument must be provided and cannot be null.
+4. `User!` – Specifies that the mutation must return a non-null User object.
+
+**3. Creating Mutation Resolver**
+
+=> Created a `newUser()` resolver function inside `getuser.js`.
+
+=> The function receives the arguments provided by the client and creates a new User object.
+
+=> Used `dummyUsers.length + 1` to generate a new user ID.
+
+=> Used `dummyUsers.push()` to add the newly created user to the existing dummy users array.
+
+=> Returned the newly created User object as the mutation response.
+
+**getuser.js**
+
+```javascript
+// Mutations
+function newUser(parent, args) {
+
+    console.log(args);
+
+    const User = {
+        id: dummyUsers.length + 1,
+        name: args.name,
+        address: args.address,
+        email: args.email,
+        mobile: args.mobile,
+    };
+
+    dummyUsers.push(User);
+
+    return User;
+}
+
+const resolvers = {
+    Query: {
+        getUsers
+    },
+    Mutation: {
+        newUser
+    }
+};
+```
+
+**Understanding Resolver Arguments:**
+
+=> `parent` – Contains the result returned by the parent resolver.
+
+=> `args` – Contains the arguments passed by the client while executing the mutation.
+
+=> In this example, `args` contains name, address, email and mobile.
+
+**4. Executing Mutation in Apollo Server**
+
+=> Tested the `newUser` mutation through the Apollo Server interface.
+
+=> Passed user details and a nested address object as mutation arguments.
+
+**Mutation Operation:**
+
+```graphql
+mutation {
+    newUser(
+        name: "Sumit"
+        address: {
+            houseNumber: 101
+            buildingName: "Shree Residency"
+            Area: "Maninagar"
+            pincode: 380008
+            City: "Ahmedabad"
+            State: "Gujarat"
+        }
+        email: "sumit@gmail.com"
+        mobile: "9876543210"
+    ) {
+        id
+        name
+        email
+    }
+}
+```
+
+**Understanding the Mutation Operation:**
+
+1. `mutation` – Indicates that we are performing a data-modifying operation.
+2. `newUser` – Calls the mutation defined inside the Mutation type.
+3. `name`, `address`, `email`, `mobile` – Input arguments passed to the resolver.
+4. `address` – Accepts a nested object using the `AddressInput` type.
+5. `{ id name email }` – Specifies which fields should be returned in the response.
+
+**Expected Response:**
+
+```json
+{
+    "data": {
+        "newUser": {
+            "id": 16,
+            "name": "Sumit",
+            "email": "sumit@gmail.com"
+        }
+    }
+}
+```
+
+**Important Learning:**
+
+=> GraphQL Mutations allow clients to perform Create, Update and Delete operations.
+
+=> Input types help pass structured and reusable objects to mutations.
+
+=> Resolvers handle the actual business logic of mutations.
+
+=> The client can specify exactly which fields it wants returned after executing a mutation.
+
+=> In this exercise, the new user is added to the dummy JavaScript array. This is temporary storage; the data will not persist after the application restarts. MongoDB integration for persistent storage can be implemented next.
