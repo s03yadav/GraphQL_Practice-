@@ -57,7 +57,9 @@ const apolloServer = new ApolloServer({
 });
 ```
 
+
 ++++++++++++++++++++++++++++++++ Day 2 Update ++++++++++++++++++++++++++++++++
+
 
 **Integrating Apollo Server with Express**
 
@@ -105,7 +107,9 @@ startServer();
 5. `expressMiddleware()` – Connecting Apollo Server with Express.
 6. `app.listen()` – Starting the Express HTTP server.
 
+
 ++++++++++++++++++++++++++++++++ Day 3 Update ++++++++++++++++++++++++++++++++
+
 
 **Modular File Structure for GraphQL**
 
@@ -225,7 +229,9 @@ module.exports = connect;
 
 The Express server starts listening for incoming requests only after a successful database connection. This ensures that the application does not start accepting requests when its database connection has failed.
 
+
 ++++++++++++++++++++++++++++++++ Day 5 Update ++++++++++++++++++++++++++++++++
+
 
 **Introduction to GraphQL Mutations**
 
@@ -397,3 +403,267 @@ mutation {
 => The client can specify exactly which fields it wants returned after executing a mutation.
 
 => In this exercise, the new user is added to the dummy JavaScript array. This is temporary storage; the data will not persist after the application restarts. MongoDB integration for persistent storage can be implemented next.
+
+
+++++++++++++++++++++++++++++++++ Day 6 Update ++++++++++++++++++++++++++++++++
+
+
+**Introduction to Apollo Client (Client-Side GraphQL)**
+
+=> Learned how to integrate Apollo Client into a React application to communicate with the GraphQL API created using Apollo Server.
+
+=> Apollo Client helps the frontend send GraphQL Queries and Mutations to the backend, manage responses, and maintain a local cache of fetched data.
+
+**1. Setting Up Apollo Client**
+
+=> Created an Apollo Client instance using `ApolloClient({})`.
+
+=> Configured the client using `HttpLink` and `InMemoryCache`.
+
+**Example:**
+
+```javascript
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+
+const httpLink = new HttpLink({
+    uri: 'http://localhost:9000/graphQL'
+});
+
+const client = new ApolloClient({
+    link: httpLink,
+    cache: new InMemoryCache()
+});
+```
+
+**Understanding the Configuration:**
+
+1. `ApolloClient({})` – Creates an Apollo Client instance that manages communication between the React frontend and GraphQL backend.
+
+2. `HttpLink` – Establishes the HTTP connection through which GraphQL requests are sent to the Apollo Server.
+
+3. `uri` – Specifies the URL of the GraphQL endpoint where the backend server receives requests.
+
+4. `link: httpLink` – Connects the HTTP link to Apollo Client so it knows where and how to send GraphQL operations.
+
+**Why do we use HttpLink?**
+
+=> HttpLink acts as a communication layer between Apollo Client and Apollo Server.
+
+=> Whenever a GraphQL Query or Mutation is executed, HttpLink sends the operation to the specified GraphQL endpoint using HTTP.
+
+**2. InMemoryCache**
+
+=> Used `new InMemoryCache()` to create a cache system for Apollo Client.
+
+=> InMemoryCache stores previously fetched GraphQL data in the browser's memory.
+
+**Why do we need InMemoryCache?**
+
+1. Avoids unnecessary API requests when previously fetched data is available in the cache.
+2. Improves application performance by reducing network requests.
+3. Makes previously fetched data available more quickly.
+4. Helps Apollo Client manage and update GraphQL data locally.
+
+**Example:**
+
+```javascript
+const client = new ApolloClient({
+    link: httpLink,
+    cache: new InMemoryCache()
+});
+```
+
+**Important Learning:**
+
+=> InMemoryCache is a client-side cache, not a permanent database.
+
+=> Its data is stored in memory and is generally lost when the application is refreshed or restarted.
+
+**3. ApolloProvider**
+
+=> Used `ApolloProvider` to make the configured Apollo Client available throughout the React application.
+
+=> Wrapped the main React application component inside ApolloProvider.
+
+**Example:**
+
+```javascript
+import { ApolloProvider } from '@apollo/client/react';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <ApolloProvider client={client}>
+        <App />
+    </ApolloProvider>
+);
+```
+
+**Why do we use ApolloProvider?**
+
+1. It provides the Apollo Client instance to all nested React components.
+2. Allows components to execute GraphQL Queries and Mutations without manually passing the client through props.
+3. Makes Apollo Client accessible through hooks such as `useQuery` and `useLazyQuery`.
+
+**4. Understanding gql**
+
+=> Used `gql` to define GraphQL Queries inside the React application.
+
+=> `gql` is a GraphQL template literal tag that parses GraphQL query strings into DocumentNode objects that Apollo Client can understand.
+
+**Example:**
+
+```javascript
+import { gql } from '@apollo/client';
+
+const GET_USERS = gql`
+    query {
+        getUsers {
+            id
+            name
+        }
+    }
+`;
+```
+
+**Important Learning:**
+
+=> `gql` allows us to write GraphQL operations directly inside JavaScript files.
+
+=> The resulting query can be passed to Apollo Client hooks such as `useQuery` and `useLazyQuery`.
+
+**5. useQuery Hook**
+
+=> Learned about the `useQuery` hook, which is used to execute GraphQL Queries inside React functional components.
+
+=> It automatically executes the query when the component renders.
+
+**Example:**
+
+```javascript
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
+
+const GET_USERS = gql`
+    query {
+        getUsers {
+            id
+            name
+        }
+    }
+`;
+
+const Users = () => {
+
+    const { loading, error, data } = useQuery(GET_USERS);
+
+    if (loading) {
+        return <h2>Loading...</h2>;
+    }
+
+    if (error) {
+        return <h2>Error: {error.message}</h2>;
+    }
+
+    return (
+        <div>
+            {data.getUsers.map((user) => (
+                <h3 key={user.id}>{user.name}</h3>
+            ))}
+        </div>
+    );
+};
+
+export default Users;
+```
+
+**Understanding useQuery Parameters:**
+
+The `useQuery()` hook returns an object containing different properties.
+
+1. `loading` – A boolean value that indicates whether the GraphQL request is currently in progress.
+
+2. `error` – Contains error information if something goes wrong while executing the GraphQL operation.
+
+3. `data` – Contains the response data returned by the GraphQL server after successful execution.
+
+**Important Learning:**
+
+=> `useQuery` automatically executes the GraphQL query when the component renders.
+
+=> It also manages loading states, errors and returned data, reducing the need to manually manage API requests using `useEffect` and `useState`.
+
+**6. useLazyQuery Hook**
+
+=> Learned about the `useLazyQuery` hook, which is used when we want to execute a GraphQL Query only after a specific user action or event.
+
+=> Unlike `useQuery`, it does not automatically execute the query when the component renders.
+
+**Example:**
+
+```javascript
+import { gql } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client/react';
+
+const GET_USERS = gql`
+    query {
+        getUsers {
+            id
+            name
+        }
+    }
+`;
+
+const LazyQuery = () => {
+
+    const [fetchData, { loading, error, data }] =
+        useLazyQuery(GET_USERS);
+
+    return (
+        <div>
+            <button onClick={() => fetchData()}>
+                Fetch Users
+            </button>
+
+            {loading && <h2>Loading...</h2>}
+
+            {error && <h2>{error.message}</h2>}
+
+            {data && data.getUsers.map((user) => (
+                <h3 key={user.id}>{user.name}</h3>
+            ))}
+        </div>
+    );
+};
+
+export default LazyQuery;
+```
+
+**Understanding useLazyQuery Parameters:**
+
+Unlike `useQuery`, `useLazyQuery` returns an array containing two elements:
+
+1. `fetchData` – A function that manually triggers the GraphQL Query whenever required.
+
+2. Query Result Object – Contains the following properties:
+
+   - `loading` – Indicates whether the query is currently executing.
+   - `error` – Contains error information if the query fails.
+   - `data` – Contains the response received from the GraphQL server.
+
+**Difference Between useQuery and useLazyQuery:**
+
+| useQuery | useLazyQuery |
+|---|---|
+| Executes automatically when the component renders. | Executes only when its trigger function is called. |
+| Does not require a separate trigger function. | Returns a function to trigger the query manually. |
+| Useful when data is required immediately. | Useful when data is required after a user action. |
+| Example: Loading a user list on page load. | Example: Fetching user details after clicking a button. |
+
+**Important Learning:**
+
+=> Both hooks are used to execute GraphQL Queries in React functional components.
+
+=> `useQuery` is suitable when data needs to be fetched automatically.
+
+=> `useLazyQuery` is suitable when we want control over when the query gets executed.
+
+++++++++++++++++++++++++++++++++ Day 6 Completed ++++++++++++++++++++++++++++++++
